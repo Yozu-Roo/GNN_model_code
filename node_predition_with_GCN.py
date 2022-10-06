@@ -1,7 +1,4 @@
-'''
-GCN Model
-Now we will implement our GCN model!
-'''
+
 import torch
 import torch.nn.functional as F
 
