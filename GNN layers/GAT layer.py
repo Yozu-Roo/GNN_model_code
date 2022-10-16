@@ -12,7 +12,6 @@ from torch_geometric.utils import softmax
 from torch_geometric.data import Data, DataLoader
 from torch_geometric.datasets import Planetoid
 
-
 class GAT(MessagePassing):
     def __init__(self, in_channels, out_channels, heads=2, negative_slope=0.2, dropout=0., **kwargs):
         '''
