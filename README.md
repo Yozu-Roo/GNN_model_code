@@ -1,5 +1,7 @@
 # GNN-model-code
 
+[TOC]
+
 *更新中……*
 
 该项目主要记录使用PyG、OGB等框架对GNN模型进行构建的过程，其中的资源和编码的方法和思路参照了斯坦福大学的公开课《图机器学习》和一些大佬的博客，后续分章节提供相关的引文链接。
@@ -154,3 +156,38 @@ GNN单层PyG创建，具体的技术实现原理可细节可参考[cs224w（图�
 > Node task. test set size: 140
 > Maximum accuracy: 0.782
 > Minimum loss: 0.028875034302473068
+
+## 4.link_prediction_with_GraphSAGE.py
+
+本次实验是基于Deepsnap Basic的链接预测任务，即预测两个节点之间是否存在边。使用的数据集是Cora数据集，将数据集采用inductive方式划分。
+
+> 训练：用 training message edges 预测 training supervision edges
+>
+> 验证：用 training message edges 和 training supervision edges 预测 validation edges
+>
+> 测试：用 training message edges 和 training supervision edges 和 validation edges 预测 test edges
+
+本次实验的参考博客：https://blog.csdn.net/PolarisRisingWar/article/details/118545695
+
+针对Cora数据集划分的具体情况见表格：
+
+|           | edge_index (message passing edges) | edge_label_index (supervision edges) | edge_label |
+| :-------: | :--------------------------------: | :----------------------------------: | :--------: |
+| train_set |                7176                |                 3592                 |    3592    |
+| valid_set |                8972                |                 1052                 |    1052    |
+| test_set  |                9498                |                 2116                 |    2116    |
+
+其中，edge_label为数据集划分后的属性，其代表supervision edge的真实标签类型（即是否有边），supervision edges中正负样本边各占50%（负样本，即采样一些不存在边的节点对作为负样本边）。
+$$
+EdgeIndex_{valid}=EdgeIndex_{train}+0.5*EdgeLabelIndex_{train}
+$$
+
+$$
+EdgeIndex_{test}=EdgeIndex_{valid}+0.5*EdgeLabelIndex_{valid}
+$$
+
+在训练过程中，使用message passing edges进行消息传递，即不参与预测；使用supervision edges进行预测。
+
+最终的模型效果：
+
+> Train: 0.8823, Val: 0.7995, Test: 0.7942
