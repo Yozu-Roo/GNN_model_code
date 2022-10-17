@@ -8,7 +8,7 @@ from torch_geometric.data import DataLoader
 from ogb.graphproppred.mol_encoder import AtomEncoder
 from torch_geometric.nn import global_mean_pool
 import torch
-from GNN_Learning_PyG.cab2_1 import GCN
+from GNN_model_code.node_predition_with_GCN import GCN
 from operator import itemgetter
 
 #  本次用到的数据集是化学分子结构图，每张图展示一个化学分子结构，每个原子都有不同的特征，原子之间用化学健链接
@@ -26,7 +26,6 @@ split_idx = dataset.get_idx_split()
 train_loader = DataLoader(itemgetter(*split_idx['train'])(dataset), batch_size=32, shuffle=True, num_workers=0)
 valid_loader = DataLoader(itemgetter(*split_idx['valid'])(dataset), batch_size=32, shuffle=False, num_workers=0)
 test_loader = DataLoader(itemgetter(*split_idx['test'])(dataset), batch_size=32, shuffle=False, num_workers=0)
-
 
 
 class GCN_Graph(torch.nn.Module):
@@ -104,6 +103,7 @@ def train(model, data_loader, optimizer, loss_fn):
 
     return loss.item()
 
+
 def eval(model, loader, evaluator):
     model.eval()
     y_true = []
@@ -122,9 +122,10 @@ def eval(model, loader, evaluator):
     y_true = torch.cat(y_true, dim=0).numpy()
     y_pred = torch.cat(y_pred, dim=0).numpy()
 
-    input_dict = {"y_true":y_true, "y_pred":y_pred}
+    input_dict = {"y_true": y_true, "y_pred": y_pred}
 
     return evaluator.eval(input_dict)
+
 
 if __name__ == '__main__':
 
@@ -137,8 +138,8 @@ if __name__ == '__main__':
     }
 
     model = GCN_Graph(args['hidden_dim'],
-                dataset.num_tasks, args['num_layers'],
-                args['dropout'])
+                      dataset.num_tasks, args['num_layers'],
+                      args['dropout'])
     evaluator = Evaluator(name='ogbg-molhiv')
 
     model.reset_parameters()
@@ -150,7 +151,7 @@ if __name__ == '__main__':
     best_model = None
     best_valid_acc = 0
 
-    for epoch in range(1, 1+args["epoch"]):
+    for epoch in range(1, 1 + args["epoch"]):
         print("Training...")
         loss = train(model, train_loader, optimizer, loss_fn)
 
@@ -159,14 +160,14 @@ if __name__ == '__main__':
         val_result = eval(model, valid_loader, evaluator)
         test_result = eval(model, test_loader, evaluator)
 
-        train_acc, valid_acc, test_acc = train_result[dataset.eval_metric], val_result[dataset.eval_metric], test_result[dataset.eval_metric]
+        train_acc, valid_acc, test_acc = train_result[dataset.eval_metric], val_result[dataset.eval_metric], \
+                                         test_result[dataset.eval_metric]
 
         if valid_acc > best_valid_acc:
-          best_valid_acc = valid_acc
-          best_model = copy.deepcopy(model)
+            best_valid_acc = valid_acc
+            best_model = copy.deepcopy(model)
         print(f'Epoch: {epoch:02d}, '
-            f'Loss: {loss:.4f}, '
-            f'Train: {100 * train_acc:.2f}%, '
-            f'Valid: {100 * valid_acc:.2f}% '
-            f'Test: {100 * test_acc:.2f}%')
-
+              f'Loss: {loss:.4f}, '
+              f'Train: {100 * train_acc:.2f}%, '
+              f'Valid: {100 * valid_acc:.2f}% '
+              f'Test: {100 * test_acc:.2f}%')
